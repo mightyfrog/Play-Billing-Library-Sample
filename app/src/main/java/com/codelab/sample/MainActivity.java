@@ -15,6 +15,7 @@ import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 
 import java.util.ArrayList;
@@ -34,10 +35,10 @@ public class MainActivity extends AppCompatActivity implements BillingClientStat
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -45,9 +46,9 @@ public class MainActivity extends AppCompatActivity implements BillingClientStat
             }
         });
 
-        mTextView = (TextView) findViewById(R.id.textView);
+        mTextView = findViewById(R.id.textView);
 
-        mBillingClient = new BillingClient.Builder(this).setListener(this).build();
+        mBillingClient = BillingClient.newBuilder(this).setListener(this).build();
         mBillingClient.startConnection(this);
     }
 
@@ -88,27 +89,30 @@ public class MainActivity extends AppCompatActivity implements BillingClientStat
         skuList.add("premium");
         skuList.add("gas");
         skuList.add("dummy"); // non-existing id
-        mBillingClient.querySkuDetailsAsync(BillingClient.SkuType.INAPP, skuList, new SkuDetailsResponseListener() {
+        SkuDetailsParams params = SkuDetailsParams.newBuilder()
+                .setSkusList(skuList)
+                .setType(BillingClient.SkuType.INAPP)
+                .build();
+        mBillingClient.querySkuDetailsAsync(params, new SkuDetailsResponseListener() {
             @Override
-            public void onSkuDetailsResponse(SkuDetails.SkuDetailsResult result) {
-                if (result.getResponseCode() == BillingClient.BillingResponse.OK) {
-                    List<SkuDetails> list = result.getSkuDetailsList();
-                    if (list.size() != 0) {
-                        for (SkuDetails sd : list) {
+            public void onSkuDetailsResponse(int responseCode, List<SkuDetails> skuDetailsList) {
+                if (responseCode == BillingClient.BillingResponse.OK) {
+                    if (skuDetailsList.size() != 0) {
+                        for (SkuDetails sd : skuDetailsList) {
                             mTextView.append(sd.toString() + "\n\n");
                         }
                     } else {
                         Toast.makeText(MainActivity.this, "No purchases yet", Toast.LENGTH_LONG).show();
                     }
                 } else {
-                    Log.d(TAG, "Query failed: (response code=" + result.getResponseCode() + ")");
+                    Log.d(TAG, "Query failed: (response code=" + responseCode + ")");
                 }
             }
         });
     }
 
     private void launchPurchase() {
-        BillingFlowParams params = new BillingFlowParams.Builder()
+        BillingFlowParams params = BillingFlowParams.newBuilder()
                 .setSku("gas")
                 .setType(BillingClient.SkuType.INAPP)
                 .build();
