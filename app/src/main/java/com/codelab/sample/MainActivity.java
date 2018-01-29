@@ -5,7 +5,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,7 +15,6 @@ import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,12 +37,7 @@ public class MainActivity extends AppCompatActivity implements BillingClientStat
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                launchPurchase();
-            }
-        });
+        fab.setOnClickListener(view -> launchPurchase());
 
         mTextView = findViewById(R.id.textView);
 
@@ -93,20 +86,17 @@ public class MainActivity extends AppCompatActivity implements BillingClientStat
                 .setSkusList(skuList)
                 .setType(BillingClient.SkuType.INAPP)
                 .build();
-        mBillingClient.querySkuDetailsAsync(params, new SkuDetailsResponseListener() {
-            @Override
-            public void onSkuDetailsResponse(int responseCode, List<SkuDetails> skuDetailsList) {
-                if (responseCode == BillingClient.BillingResponse.OK) {
-                    if (skuDetailsList.size() != 0) {
-                        for (SkuDetails sd : skuDetailsList) {
-                            mTextView.append(sd.toString() + "\n\n");
-                        }
-                    } else {
-                        Toast.makeText(MainActivity.this, "No purchases yet", Toast.LENGTH_LONG).show();
+        mBillingClient.querySkuDetailsAsync(params, (responseCode, skuDetailsList) -> {
+            if (responseCode == BillingClient.BillingResponse.OK) {
+                if (skuDetailsList.size() != 0) {
+                    for (SkuDetails sd : skuDetailsList) {
+                        mTextView.append(sd.toString() + "\n\n");
                     }
                 } else {
-                    Log.d(TAG, "Query failed: (response code=" + responseCode + ")");
+                    Toast.makeText(MainActivity.this, "No purchases yet", Toast.LENGTH_LONG).show();
                 }
+            } else {
+                Log.d(TAG, "Query failed: (response code=" + responseCode + ")");
             }
         });
     }

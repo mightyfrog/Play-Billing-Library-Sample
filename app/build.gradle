@@ -23,6 +23,10 @@ android {
             storeFile file('billing_codelab_signature.jks')
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
