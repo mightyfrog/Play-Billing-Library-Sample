@@ -30,7 +30,7 @@ android {
 }
 
 dependencies {
-    compile "com.android.support:appcompat-v7:$support_version"
-    compile "com.android.support:design:$support_version"
-    compile "com.android.billingclient:billing:1.0"
+    implementation "com.android.support:appcompat-v7:$support_version"
+    implementation "com.android.support:design:$support_version"
+    implementation "com.android.billingclient:billing:1.0"
 }
